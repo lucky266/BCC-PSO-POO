@@ -1,15 +1,16 @@
 # Ignore Gradle project-specific cache directory
 .gradle
 gradlew
-gradlew.bat
-readme.md
+gradlew.bat/
+readme.md/
 
 # Ignore Gradle build output directory
-app\build
-build\
+app/build/classes/
+build/
 
 
 # Ignore Kotlin plugin data
 .kotlin
 
 .vscode
+README.md
