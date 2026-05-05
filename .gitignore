@@ -2,7 +2,9 @@
 .gradle
 
 # Ignore Gradle build output directory
+app/build
 build
+
 
 # Ignore Kotlin plugin data
 .kotlin
