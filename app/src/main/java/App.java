@@ -17,18 +17,16 @@ public class App {
         for (int i = 0; i < PSOConfig.maxParticles; i++) {
             objParticulas[i] = new Particula();
             objParticulas[i].UpdatePersonalAndGlobal();
-            // DEBUG IN CONSOLE
+            
+            // DEBUG
             if (PSOConfig.debug) {
-                System.out.printf(" \n\n init-part [%d]: [%f,%f] V: [%f,%f] P:[%f,%f] G: [%f,%f] D: %f", i,
+                System.out.printf(" \n\n init-particle [%d]: [%f,%f] V: [%f,%f] P:[%f,%f] G: [%f,%f] D: %f", i,
                         objParticulas[i].getpositionI(0), objParticulas[i].getpositionI(1),
                         objParticulas[i].getVelocityI(0), objParticulas[i].getVelocityI(1),
                         objParticulas[i].getpBestpositionI(0), objParticulas[i].getpBestpositionI(1),
                         PSOConfig.globalBestPOS[0], PSOConfig.globalBestPOS[1],
                         objParticulas[i].getTargetDistance(objParticulas[i].getPosition()));
             }
-
-            // setar primeiro pbest e gbest
-
         }
 
         int iterations = 0;
@@ -44,9 +42,7 @@ public class App {
             double[] yDataT = { PSOConfig.targetPOS[1] };
 
             XYChart chart = QuickChart.getChart("Particulas", "x", "y", "particulas", XData, YData);
-            // XYChart chart = new
-            // XYChartBuilder().width((int)PSOConfig.XMax).height((int)PSOConfig.YMax).title("particulas").xAxisTitle("X").yAxisTitle("Y").build();
-
+           
             chart.getStyler().setSeriesLines(new BasicStroke[] {
                     new BasicStroke(0.0f)
             });
@@ -69,9 +65,6 @@ public class App {
                 }
 
                 // Scan das particulas
-                if (PSOConfig.debug) {
-                    System.out.printf("\n\n\tCICLO!\n\n");
-                }
                 for (int i = 0; i < PSOConfig.maxParticles; i++) {
 
                     // Modificador de posição
@@ -86,7 +79,7 @@ public class App {
                                 PSOConfig.globalBestPOS[0], PSOConfig.globalBestPOS[1],
                                 objParticulas[i].getTargetDistance(objParticulas[i].getPosition()));
                     }
-                    // Compare e Seta pbest e gbest
+                    // Update do pBest e gBest
                     objParticulas[i].UpdatePersonalAndGlobal();
 
                     if (PSOConfig.debug) {
@@ -96,8 +89,6 @@ public class App {
                                 PSOConfig.globalBestPOS[0], PSOConfig.globalBestPOS[1],
                                 objParticulas[i].getTargetDistance(objParticulas[i].getPosition()));
                     }
-
-                    // Condicao de parada
                 }
                 Thread.sleep(PSOConfig.refreshRate); // taxa de atualizacao
 
@@ -109,11 +100,9 @@ public class App {
                         sw.repaintChart();
                     }
                 });
-                // Contador de iterações
+                
                 iterations++;
-            } while (targetFound() == false);
-            System.out.printf("Particulas chegaram ao ponto em: %d Iteracoes. GBest:", iterations);
-            printOutCoords(PSOConfig.globalBestPOS);
+            } while (targetFound(iterations) == false);
         } else {
             Thread.sleep(3000);
             do {
@@ -130,21 +119,23 @@ public class App {
                 
                 Thread.sleep(PSOConfig.refreshRate); // Refresh rate
                 iterations++;
-            } while (targetFound() == false);
-            
-            System.out.printf("Particulas chegaram ao ponto em: %d Iteracoes. GBest:", iterations);
-            printOutCoords(PSOConfig.globalBestPOS);
-            
-            
+            } while (targetFound(iterations) == false);
         }
     }
-    public static boolean targetFound(){
+    public static boolean targetFound(int iterations){
+        if(PSOConfig.maxIterations > 0 && iterations >= PSOConfig.maxIterations){
+            System.out.printf("Limite de Iteracoes atingidas [%d]\nMelhor Particula:",iterations);
+            printOutCoords(PSOConfig.globalBestPOS);
+            return true;
+        }
         double distance = 0;
         for(int i=0;i<PSOConfig.N;i++){
-            distance=Math.pow(PSOConfig.globalBestPOS[i]- PSOConfig.targetPOS[i], 2);
+            distance=distance+Math.pow(PSOConfig.globalBestPOS[i] - PSOConfig.targetPOS[i], 2);
         }
         distance=Math.sqrt(distance);
         if(distance<PSOConfig.tolerance){
+            System.out.printf("Particulas chegaram ao ponto em: %d Iteracoes. GBest:", iterations);
+            printOutCoords(PSOConfig.globalBestPOS);
             return true;
         }else{
             return false;

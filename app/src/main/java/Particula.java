@@ -12,8 +12,7 @@ public class Particula {
         for(int i = 0;i < PSOConfig.N; i++){
             // TODO: MANUAL INPUT (RESOLVER DEPOIS)
             PSOConfig.escopoDeBusca[i][0]=-1000; // seta min 4 all dimensions
-            PSOConfig.escopoDeBusca[i][1]=0; // seta max 4 all dimensions
-            // 
+            PSOConfig.escopoDeBusca[i][1]=1000; // seta max 4 all dimensions
             min = PSOConfig.escopoDeBusca[i][0];
             max = PSOConfig.escopoDeBusca[i][1];
 
