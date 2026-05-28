@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "es2016",
+    "module": "commonjs",
+
+    /* Diretórios */
+    "rootDir": "src",             /* Pasta raiz dos arquivos TS */
+    "outDir": "dist",             /* Pasta onde sai o JS compilado */
+
+    /* Emissão */
+    "sourceMap": true,            /* Gera sourcemaps para debugar */
+    "declaration": true,          /* Gera arquivos .d.ts para tipagem */
+    "removeComments": true,       /* Remove comentários do JS gerado */
+
+    /* Interop Constraints */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Checking */
+    "strict": true,
+
+    /* Completeness */
+    "skipLibCheck": true
+  },
+ "include": ["src/**/*"],       
+  "exclude": ["node_modules", "dist"]  /* Ignorar node_modules e dist */
+}
