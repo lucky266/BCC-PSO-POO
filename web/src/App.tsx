@@ -71,7 +71,7 @@ function App() {
     try {
       
       await axios.post("http://localhost:3000/api/pso/config", payload);
-      console.log("Configurações enviadas! Simulador Java iniciado.");
+      console.log("Configurações enviadas. Simulador Java iniciado.");
     } catch (error) {
       console.error("Erro ao enviar configurações para o Fastify:", error);
     }
