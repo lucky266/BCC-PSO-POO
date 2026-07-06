@@ -1,4 +1,6 @@
 import java.util.Random;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 public class Particula {
 
@@ -10,15 +12,14 @@ public class Particula {
         Random random = new Random();
         double max,min;
         for(int i = 0;i < PSOConfig.N; i++){
-            // TODO: MANUAL INPUT (RESOLVER DEPOIS)
-            PSOConfig.escopoDeBusca[i][0]=-1000; // seta min 4 all dimensions
-            PSOConfig.escopoDeBusca[i][1]=1000; // seta max 4 all dimensions
+            PSOConfig.escopoDeBusca[i][0]=-6.28; // seta min 4 all dimensions
+            PSOConfig.escopoDeBusca[i][1]=6.28; // seta max 4 all dimensions
             min = PSOConfig.escopoDeBusca[i][0];
             max = PSOConfig.escopoDeBusca[i][1];
 
             pBestposition[i]=Math.abs(min)+Math.abs(max);
             position[i] = random.nextDouble() * (max - min) + min;
-            velocity[i] = 0;
+            velocity[i] = 0; //random.nextDouble() * (3 - (-3)) - 3;
         }
     }
     
@@ -36,34 +37,32 @@ public class Particula {
     public void calcularVelocity(){
         Random random = new Random();
         double peso = PSOConfig.weight;
-        double c1 = PSOConfig.fatorSocial;
-        double c2 = PSOConfig.fatorCognitivo;
+        double c2 = PSOConfig.fatorSocial;
+        double c1 = PSOConfig.fatorCognitivo;
         double[] vetor1 = new double[PSOConfig.N];
         double[] vetor2 = new double[PSOConfig.N];
+        
             
         vetor1=subtracaoVetores(pBestposition, position);
         vetor2=subtracaoVetores(PSOConfig.globalBestPOS, position);
-        if(PSOConfig.debug){
-            for(int i=0;i<PSOConfig.N;i++){
-                System.out.printf("\n\nVETOR 1:[%d] %f %f",i,vetor1[i],vetor1[i]);
-                System.out.printf("\n\nVETOR 2:[%d] %f %f",i,vetor2[i],vetor2[i]);
-            }
-        }
-
+        // VETOR 1: FATOR PBEST VETOR 2: FATOR GBEST
         for(int i=0;i<PSOConfig.N;i++){
             // velocity = peso * velocity + coeficienteCognitivo(c1) * rand(0-1) * ( pBest - posicao ) + coeficienteSocial * rand(0-1) * ( gbest - posicao)
-            double r1 = random.nextDouble(1);
-            double r2 = random.nextDouble(1);
-            vetor1[i]=vetor1[i]*r1*c1;
-            vetor2[i]=vetor2[i]*r2*c2;
-            if(PSOConfig.debug){
-                System.out.printf("\n\nVETOR 1 IN4 [%d] %f %f\tr1: %f c1: %f",i,vetor1[i],vetor1[i],r1,c1);
-                System.out.printf("\n\nVETOR 2 IN4 [%d] %f %f\tr2: %f c2: %f",i,vetor2[i],vetor2[i],r2,c2); 
-            }          
+            double r1 = random.nextDouble();
+            double r2 = random.nextDouble();
+            vetor1[i]=vetor1[i]*r1*c1; // FATOR BPEST c1 cognitivo
+            vetor2[i]=vetor2[i]*r2*c2; // FATOOR GBEST c2 social         
         }
-        double[] vetor3 = somaVetores(vetor1, vetor2);
+        double[] vetor3 = somaVetores(vetor1, vetor2); 
         for(int i=0;i<PSOConfig.N;i++){
             velocity[i]=peso*velocity[i]+vetor3[i];
+        }
+        if(PSOConfig.maxVelocity>=0){ // limitador de velocidade 
+            for(int i=0;i<PSOConfig.N;i++){
+                if(velocity[i]>PSOConfig.maxVelocity){
+                    velocity[i]=PSOConfig.maxVelocity;
+                }
+            }
         }
     }
 
@@ -103,13 +102,47 @@ public class Particula {
         return resultado;
     }
 
-
     public void UpdatePersonalAndGlobal() {
-        if (getTargetDistance(position) < getTargetDistance(pBestposition)) {
-            pBestposition = position.clone(); // Pelo visto tem q clonar pq senao só aponta, obrigado chatgpt por explicar isso
-        }
-        if (getTargetDistance(position) < getTargetDistance(PSOConfig.globalBestPOS)) {
-                PSOConfig.globalBestPOS = position.clone();
+        if(PSOConfig.functionMode[0]){ // Function Mode ligado
+            if(PSOConfig.functionMode[2]){ // closest matchs to input result
+                if(Math.abs(calcularFitness(position)-PSOConfig.targetValue)<Math.abs(calcularFitness(pBestposition)-PSOConfig.targetValue)){
+                    pBestposition=position.clone();
+                }else{
+                    if(PSOConfig.penalidade){
+                            aplicarPenalidade();
+                    }
+                }
+                if(Math.abs(calcularFitness(position)-PSOConfig.targetValue)<Math.abs(calcularFitness(PSOConfig.globalBestPOS)-PSOConfig.targetValue)){
+                    PSOConfig.globalBestPOS=position.clone();
+                }
+            }else{              
+                if(PSOConfig.functionMode[1]){ // Achar máximo
+                    if(calcularFitness(position) > calcularFitness(pBestposition)){
+                        pBestposition = position.clone();
+                        
+                    }else{
+                        if(PSOConfig.penalidade){
+                            aplicarPenalidade();
+                        }
+                    }
+                    if(calcularFitness(position) > calcularFitness(PSOConfig.globalBestPOS)){
+                        PSOConfig.globalBestPOS = position.clone();
+                    }
+                }else{ // Achar mínimo
+                    if(calcularFitness(position) < calcularFitness(pBestposition)){
+                        pBestposition = position.clone();
+                    }else{
+                        if(PSOConfig.penalidade){
+                            aplicarPenalidade();
+                        }
+                    }
+                    if(calcularFitness(position) < calcularFitness(PSOConfig.globalBestPOS)){
+                            PSOConfig.globalBestPOS = pBestposition.clone();
+                    }
+                }
+            }
+        }else{
+
         }
     }
     public boolean checkFound(){
@@ -117,6 +150,32 @@ public class Particula {
             return true;
         }else{
             return false;
+        }
+    }
+
+    // coisa nova ai: Calcular fitness baseado em expressao (new method)
+    
+    public double calcularFitness(double[] valor){
+        // String para N var
+        String[] variaveis = new String[PSOConfig.N];
+        for(int i=0;i<PSOConfig.N;i++){
+            variaveis[i]="x_"+i;
+        }
+        Expression expressao = new ExpressionBuilder(PSOConfig.functionInput)
+        .variables(variaveis) // variaveis
+        .build();
+
+        for(int i=0;i<PSOConfig.N;i++){
+            expressao.setVariable(variaveis[i],valor[i]);
+        }
+        double result = expressao.evaluate();
+        return result;
+    }
+    
+    // penalidade: zera velocidade se new pos for pior q pbest
+    void aplicarPenalidade(){
+        for(int i=0;i<PSOConfig.N;i++){
+            velocity[i]=0;
         }
     }
 

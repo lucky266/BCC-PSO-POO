@@ -7,31 +7,21 @@ import java.lang.Thread;
 public class App {
     public static void main(String[] args) throws Exception {
 
-        // data pra chart (DataT pra marcar Target in chart)
-        double[] XData = new double[PSOConfig.maxParticles];
-        double[] YData = new double[PSOConfig.maxParticles];
-
-        Particula[] objParticulas = new Particula[PSOConfig.maxParticles];
-
         // Particle Init
+        int iterations = 0;
+        Particula[] objParticulas = new Particula[PSOConfig.maxParticles];
         for (int i = 0; i < PSOConfig.maxParticles; i++) {
             objParticulas[i] = new Particula();
             objParticulas[i].UpdatePersonalAndGlobal();
-            
-            // DEBUG
-            if (PSOConfig.debug) {
-                System.out.printf(" \n\n init-particle [%d]: [%f,%f] V: [%f,%f] P:[%f,%f] G: [%f,%f] D: %f", i,
-                        objParticulas[i].getpositionI(0), objParticulas[i].getpositionI(1),
-                        objParticulas[i].getVelocityI(0), objParticulas[i].getVelocityI(1),
-                        objParticulas[i].getpBestpositionI(0), objParticulas[i].getpBestpositionI(1),
-                        PSOConfig.globalBestPOS[0], PSOConfig.globalBestPOS[1],
-                        objParticulas[i].getTargetDistance(objParticulas[i].getPosition()));
-            }
         }
 
-        int iterations = 0;
+        
         // XChart <=> N=2 -> plano
         if (PSOConfig.showGraph && PSOConfig.N>=2) {
+            // data pra chart (DataT pra marcar Target in chart)
+            double[] XData = new double[PSOConfig.maxParticles];
+            double[] YData = new double[PSOConfig.maxParticles];
+            
             // position to chartdata
             for (int i = 0; i < PSOConfig.maxParticles; i++) {
                 XData[i] = objParticulas[i].getpositionI(0);
@@ -55,7 +45,7 @@ public class App {
             chart.addSeries("particula", XData, YData);
             final SwingWrapper<XYChart> sw = new SwingWrapper<XYChart>(chart);
             sw.displayChart();
-            Thread.sleep(3000);
+        Thread.sleep(3000);
             // Atualização Chart
             do {
                 // Atualização XData e YData pra chart
@@ -65,31 +55,16 @@ public class App {
                 }
 
                 // Scan das particulas
+
                 for (int i = 0; i < PSOConfig.maxParticles; i++) {
 
                     // Modificador de posição
                     objParticulas[i].calcularVelocity();
                     objParticulas[i].aplicarVelocity();
-
-                    // DEBUG IN CONSOLE
-                    if (PSOConfig.debug) {
-                        System.out.printf("\n\n P-before update [%d]: [%f,%f] V: [%f,%f] G: [%f,%f] D: %f", i,
-                                objParticulas[i].getpositionI(0), objParticulas[i].getpositionI(1),
-                                objParticulas[i].getVelocityI(0), objParticulas[i].getVelocityI(1),
-                                PSOConfig.globalBestPOS[0], PSOConfig.globalBestPOS[1],
-                                objParticulas[i].getTargetDistance(objParticulas[i].getPosition()));
-                    }
                     // Update do pBest e gBest
                     objParticulas[i].UpdatePersonalAndGlobal();
-
-                    if (PSOConfig.debug) {
-                        System.out.printf("\n\n P-after update [%d]: [%f,%f] V: [%f,%f] G: [%f,%f] D: %f", i,
-                                objParticulas[i].getpositionI(0), objParticulas[i].getpositionI(1),
-                                objParticulas[i].getVelocityI(0), objParticulas[i].getVelocityI(1),
-                                PSOConfig.globalBestPOS[0], PSOConfig.globalBestPOS[1],
-                                objParticulas[i].getTargetDistance(objParticulas[i].getPosition()));
-                    }
                 }
+                
                 Thread.sleep(PSOConfig.refreshRate); // taxa de atualizacao
 
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -128,10 +103,12 @@ public class App {
             printOutCoords(PSOConfig.globalBestPOS);
             return true;
         }
+
         double distance = 0;
         for(int i=0;i<PSOConfig.N;i++){
             distance=distance+Math.pow(PSOConfig.globalBestPOS[i] - PSOConfig.targetPOS[i], 2);
         }
+        
         distance=Math.sqrt(distance);
         if(distance<PSOConfig.tolerance){
             System.out.printf("Particulas chegaram ao ponto em: %d Iteracoes. GBest:", iterations);
