@@ -24,7 +24,6 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
     implementation("javax:javaee-api:8.0")
-    implementation("org.knowm.xchart:xchart:3.8.8")
     implementation("net.objecthunter:exp4j:0.4.8")
 }
 
