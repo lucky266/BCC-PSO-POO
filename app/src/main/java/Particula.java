@@ -95,9 +95,6 @@ public class Particula {
         double[] resultado = new double[PSOConfig.N];
         for(int i=0;i<PSOConfig.N;i++){
             resultado[i]=pos1[i]-pos2[i];
-            if(PSOConfig.debug){
-            System.out.printf("\nSUB: %f-%f=%f",pos1[i],pos2[i],resultado[i]);
-            }
         }
         return resultado;
     }
@@ -168,6 +165,8 @@ public class Particula {
         for(int i=0;i<PSOConfig.N;i++){
             expressao.setVariable(variaveis[i],valor[i]);
         }
+        // TODO: Acho que a exception vem daqui de baixo, fazer try catch p resolver, ai como solução é colocar um valor
+        // bem grande como resultado, pra aproximar a divisao por zero, ai tem q ver se é negativo ou positivo, boa sorte! (se usar IA é viado)
         double result = expressao.evaluate();
         return result;
     }
