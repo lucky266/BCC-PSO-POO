@@ -27,49 +27,42 @@ function App() {
     particulas: [],
   });
 
-  
   const [target, setTarget] = useState([{ x: 400, y: 400 }]);
 
-  
   useEffect(() => {
     const buscarProgresso = async () => {
       try {
-        
-        const response = await axios.get<IteracaoPSO>("http://localhost:3000/api/pso/iteracao");
+        const response = await axios.get<IteracaoPSO>(
+          "http://localhost:3000/api/pso/iteracao",
+        );
         if (response.data) {
           setDados(response.data);
         }
-      } catch (error) {
-        
-      }
+      } catch (error) {}
     };
 
     const intervalo = setInterval(buscarProgresso, 100);
     return () => clearInterval(intervalo);
   }, []);
 
-  
   async function handleIniciarSimulacao(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const tX = Number(formData.get("targetX"));
     const tY = Number(formData.get("targetY"));
 
-    
     setTarget([{ x: tX, y: tY }]);
 
-    
     const payload = {
       numParticulas: Number(formData.get("numParticulas")),
       targetX: tX,
       targetY: tY,
       refreshRate: Number(formData.get("refreshRate")),
-      comando: "START", 
+      comando: "START",
     };
 
     try {
-      
       await axios.post("http://localhost:3000/api/pso/config", payload);
       console.log("Configurações enviadas. Simulador Java iniciado.");
     } catch (error) {
@@ -112,28 +105,30 @@ function App() {
               Global Best (GBest)
             </h2>
             <div className="font-mono text-xl text-emerald-400 font-semibold bg-slate-950 border border-slate-800/60 p-3 rounded-lg text-center">
-              X: {dados.globalBest[0]?.toFixed(2) ?? "0.00"} <br /> 
+              X: {dados.globalBest[0]?.toFixed(2) ?? "0.00"} <br />
               Y: {dados.globalBest[1]?.toFixed(2) ?? "0.00"}
             </div>
           </div>
 
           {/* CARD FORMULÁRIO DE INPUTS DO USUÁRIO */}
-          <form 
-            onSubmit={handleIniciarSimulacao} 
+          <form
+            onSubmit={handleIniciarSimulacao}
             className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl flex-1 flex flex-col justify-between"
           >
             <div className="space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">
                 Configurações do Enxame
               </h2>
-              
+
               <div>
-                <label className="block text-[11px] font-mono text-slate-400 mb-1">Nº DE PARTÍCULAS</label>
-                <input 
-                  type="number" 
-                  name="numParticulas" 
-                  defaultValue="35" 
-                  min="5" 
+                <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                  Nº DE PARTÍCULAS
+                </label>
+                <input
+                  type="number"
+                  name="numParticulas"
+                  defaultValue="35"
+                  min="5"
                   max="200"
                   className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-sm font-mono text-cyan-400 focus:outline-none focus:border-cyan-500"
                 />
@@ -141,23 +136,27 @@ function App() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">ALVO X</label>
-                  <input 
-                    type="number" 
-                    name="targetX" 
-                    defaultValue="400" 
-                    min="-1000" 
+                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                    ALVO X
+                  </label>
+                  <input
+                    type="number"
+                    name="targetX"
+                    defaultValue="400"
+                    min="-1000"
                     max="1000"
                     className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-sm font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-slate-400 mb-1">ALVO Y</label>
-                  <input 
-                    type="number" 
-                    name="targetY" 
-                    defaultValue="400" 
-                    min="-1000" 
+                  <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                    ALVO Y
+                  </label>
+                  <input
+                    type="number"
+                    name="targetY"
+                    defaultValue="400"
+                    min="-1000"
                     max="1000"
                     className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-sm font-mono text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
@@ -165,11 +164,13 @@ function App() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-slate-400 mb-1">DELAY DA ATUALIZAÇÃO (ms)</label>
-                <input 
-                  type="number" 
-                  name="refreshRate" 
-                  defaultValue="100" 
+                <label className="block text-[11px] font-mono text-slate-400 mb-1">
+                  DELAY DA ATUALIZAÇÃO (ms)
+                </label>
+                <input
+                  type="number"
+                  name="refreshRate"
+                  defaultValue="100"
                   min="20"
                   className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-sm font-mono text-slate-400 focus:outline-none focus:border-cyan-500"
                 />
@@ -178,7 +179,7 @@ function App() {
 
             {/* BOTÃO E LEGENDA VISUAL */}
             <div className="mt-6 space-y-4">
-              <button 
+              <button
                 type="submit"
                 className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 font-bold rounded-lg text-sm tracking-wide transition-all shadow-lg active:scale-[0.98]"
               >
@@ -195,11 +196,15 @@ function App() {
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-                  <span className="text-slate-400">Melhor posição global (GBest)</span>
+                  <span className="text-slate-400">
+                    Melhor posição global (GBest)
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></div>
-                  <span className="text-slate-400">Alvo Selecionado (Target)</span>
+                  <span className="text-slate-400">
+                    Alvo Selecionado (Target)
+                  </span>
                 </div>
               </div>
             </div>
@@ -224,8 +229,14 @@ function App() {
 
           <div className="flex-1 h-[650px] lg:h-[calc(100vh-200px)] min-h-[500px] bg-slate-950 rounded-lg p-2 border border-slate-800/50 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" opacity={0.6} />
+              <ScatterChart
+                margin={{ top: 20, right: 30, bottom: 20, left: 20 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#1e293b"
+                  opacity={0.6}
+                />
 
                 <XAxis
                   type="number"
@@ -233,7 +244,7 @@ function App() {
                   name="X"
                   domain={[-1000, 1000]}
                   stroke="#475569"
-                  fontSize={11}
+                  fontSize={12}
                   fontFamily="monospace"
                 />
                 <YAxis
@@ -242,31 +253,50 @@ function App() {
                   name="Y"
                   domain={[-1000, 1000]}
                   stroke="#475569"
-                  fontSize={11}
+                  fontSize={12}
                   fontFamily="monospace"
                 />
                 <ZAxis type="number" range={[100, 100]} />
 
-                <Tooltip cursor={{ strokeDasharray: "3 3", stroke: "#334155" }} />
+                <Tooltip
+                  cursor={{ strokeDasharray: "3 3", stroke: "#334155" }}
+                />
 
                 {/* Camada 1: Alvo */}
-                <Scatter name="Target" data={target} fill="#f43f5e" shape="cross" />
+                <Scatter
+                  name="Target"
+                  data={target}
+                  fill="#f43f5e"
+                  shape="cross"
+                />
 
                 {/* Camada 2: Partículas */}
-                <Scatter name="Partículas" data={dadosGrafico}>
-                  {dadosGrafico.map((entry, index) => {
+                <Scatter
+                  name="Partículas"
+                  data={dadosGrafico}
+                  shape={(props: any) => {
+                    const { cx, cy, payload } = props;
+
+                    // Verifica se a partícula atual corresponde ao globalBest
                     const isBest =
-                      entry.x === dados.globalBest[0] &&
-                      entry.y === dados.globalBest[1];
+                      payload.x === dados.globalBest[0] &&
+                      payload.y === dados.globalBest[1];
+
                     return (
-                      <Cell
-                        key={`cell-${index}`}
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={isBest ? 7 : 4} 
                         fill={isBest ? "#10b981" : "#22d3ee"}
-                        className={isBest ? "stroke-emerald-300 stroke-2" : "stroke-cyan-300/40 stroke-1"}
+                        className={
+                          isBest
+                            ? "stroke-emerald-300 stroke-3 animate-pulse"
+                            : "stroke-cyan-300/40 stroke-1"
+                        }
                       />
                     );
-                  })}
-                </Scatter>
+                  }}
+                />
               </ScatterChart>
             </ResponsiveContainer>
           </div>
