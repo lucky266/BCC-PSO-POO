@@ -6,7 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class App {
-    // Cliente HTTP nativo do Java para conversar com o Fastify
+    
     private static final HttpClient client = HttpClient.newHttpClient();
     private static final String FASTIFY_URL = "http://localhost:3000/api/pso/iteracao";
     private static final String CONFIG_URL = "http://localhost:3000/api/pso/config";
@@ -15,7 +15,7 @@ public class App {
         System.out.println("Aguardando comando de inicialização pelo React...");
 
         while (true) {
-            // 1. Pergunta para o Fastify se o usuário enviou a configuração
+            
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(CONFIG_URL))
                     .GET()
@@ -25,55 +25,55 @@ public class App {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 String jsonResponse = response.body();
 
-                // Checa se o comando recebido do front-end é START
+                
                 if (jsonResponse != null && jsonResponse.contains("\"comando\":\"START\"")) {
                     System.out.println("\n========================================");
                     System.out.println("Comando START recebido! Configurando enxame...");
 
-                    // Instancia um novo config para esta simulação específica
+                    
                     PSOConfig config = new PSOConfig();
 
-                    // 2. Extrai e injeta os valores vindos da interface web no objeto config
+                    
                     atualizarConfigComJson(config, jsonResponse);
 
                     System.out.printf("Iniciando simulação com %d partículas em busca do alvo [%.2f, %.2f]\n",
                             config.getMaxParticles(), config.getTargetPOS()[0], config.getTargetPOS()[1]);
 
-                    // 3. Inicializa o enxame de acordo com os inputs da interface
-                    // 3. Inicializa o enxame de acordo com os inputs da interface
+                    
+                    IFuncaoObjetivo problema = new ProblemaAlvo(config.getTargetPOS());
                     int maxParticles = config.getMaxParticles();
                     Particula[] objParticulas = new Particula[maxParticles];
 
                     System.out.println("DEBUG: Inicializando partículas...");
                     for (int i = 0; i < maxParticles; i++) {
-                        objParticulas[i] = new Particula(config);
+                        objParticulas[i] = new Particula(config, problema); 
                         objParticulas[i].UpdatePersonalAndGlobal();
                     }
                     System.out.println("DEBUG: Partículas inicializadas com sucesso!");
 
-                    // 4. Executa o loop matemático do PSO até convergir ou atingir o limite
+                    
                     int iterations = 0;
                     int maxIteracoes = 500;
                     do {
                         System.out.printf("DEBUG: Iniciando Iteração #%d\n", iterations);
 
-                        // Calcula a movimentação de cada partícula
+                        
                         for (int i = 0; i < maxParticles; i++) {
-                            // System.out.println("DEBUG: Calculando velocidade da partícula " + i);
+                            
                             objParticulas[i].calcularVelocity();
 
-                            // System.out.println("DEBUG: Aplicando velocidade na partícula " + i);
+                            
                             objParticulas[i].aplicarVelocity();
 
-                            // System.out.println("DEBUG: Atualizando PBest e GBest da partícula " + i);
+                            
                             objParticulas[i].UpdatePersonalAndGlobal();
                         }
 
                         System.out.println("DEBUG: Enviando dados para o Fastify...");
-                        // Transmite a iteração atual para o Fastify repassar ao gráfico
+                        
                         enviarDadosParaFastify(iterations, objParticulas, config);
 
-                        // Usa o tempo de atualização customizado pelo usuário no front-end
+                        
                         Thread.sleep(config.getRefreshRate());
 
                         System.out.println("DEBUG: Checando condição de parada (targetFound)...");
@@ -88,7 +88,7 @@ public class App {
                 System.err.println("Erro na comunicação com o backend: " + e.getMessage());
             }
 
-            // Aguarda 1 segundo antes de checar se o botão foi clicado novamente
+            
             Thread.sleep(1000);
         }
     }
@@ -104,13 +104,13 @@ public class App {
             double targetY = Double.parseDouble(extrairValorJson(json, "targetY"));
             int refreshRate = Integer.parseInt(extrairValorJson(json, "refreshRate"));
 
-            // Aplica as propriedades enviadas via input
+            
             config.setMaxParticles(numParticulas);
             config.setTargetPOS(new double[] { targetX, targetY });
             config.setRefreshRate(refreshRate);
 
-            // Opcional: Se quiser resetar o GBest ao iniciar uma nova busca com alvo
-            // diferente
+            
+            
             config.setGlobalBestPOS(new double[] { 0.0, 0.0 });
         } catch (Exception e) {
             System.err.println("Aviso: Falha ao parsear os campos de input do JSON. Usando padrões. " + e.getMessage());
@@ -138,11 +138,11 @@ public class App {
      */
     private static void resetarComandoFastify() {
         try {
-            // Envia um JSON dizendo ao Fastify para voltar o comando para "STOP" ou "IDLE"
+            
             String jsonReset = "{\"comando\":\"STOP\"}";
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(CONFIG_URL)) // Bate na mesma rota de configuração
+                    .uri(URI.create(CONFIG_URL)) 
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonReset))
                     .build();
@@ -159,7 +159,7 @@ public class App {
         }
     }
 
-    // Função que monta o JSON e envia para o backend em Fastify
+    
     private static void enviarDadosParaFastify(int iteracao, Particula[] particulas, PSOConfig config) {
         try {
             StringBuilder json = new StringBuilder();
@@ -190,29 +190,29 @@ public class App {
         }
     }
 
-    // Atualizado para receber o "config" e com os parênteses () nos métodos
+    
     public static boolean targetFound(int iterations, PSOConfig config) {
         if (config.getMaxIterations() > 0 && iterations >= config.getMaxIterations()) {
             return true;
         }
-
+        System.out.println("DEBUG: Iteração " + iterations + " | Distância: " + distance);
         double distance = 0;
         for (int i = 0; i < config.getN(); i++) {
             distance = distance + Math.pow(config.getGlobalBestPOS()[i] - config.getTargetPOS()[i], 2);
         }
         distance = Math.sqrt(distance);
 
-        // Esse print vai te mostrar a distância real diminuindo (ou não) no terminal
+        
         System.out.printf("DEBUG PARADA: Iteração #%d | Distância até o Alvo: %.4f | Tolerância: %.4f\n",
                 iterations, distance, config.getTolerance());
 
-        if (distance < 2.0) { // Teste com margem de 2 unidades
+        if (distance < 2.0) { 
             return true;
         }
         return false;
     }
 
-    // Atualizado para receber o "config" e com os parênteses () nos métodos
+    
     public static void printOutCoords(double[] pos, PSOConfig config) {
         System.out.printf(" [");
         for (int i = 0; i < config.getN(); i++) {

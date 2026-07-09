@@ -5,25 +5,26 @@ public class Particula {
     private double[] position;
     private double[] pBestposition;
     private double[] velocity;
+    private IFuncaoObjetivo funcaoObjetivo; 
     
-    // Objeto interno para guardar as configurações da simulação atual
     private PSOConfig config;
 
-    // O construtor agora obrigatoriamente recebe o config do App.java
+    
     public Particula(PSOConfig config) {
         this.config = config;
+        this.funcaoObjetivo = funcaoObjetivo;
         Random random = new Random();
         
-        // Inicializa os vetores com o tamanho N vindo do site
+        
         this.position = new double[config.getN()];
         this.pBestposition = new double[config.getN()];
         this.velocity = new double[config.getN()];
         
         double max, min;
         for(int i = 0; i < config.getN(); i++){
-            // Configura o escopo padrão caso o site não envie limites específicos
-            config.getEscopoDeBusca()[i][0] = -1000; // min
-            config.getEscopoDeBusca()[i][1] = 1000;  // max
+            
+            config.getEscopoDeBusca()[i][0] = -1000; 
+            config.getEscopoDeBusca()[i][1] = 1000;  
             
             min = config.getEscopoDeBusca()[i][0];
             max = config.getEscopoDeBusca()[i][1];
@@ -33,12 +34,21 @@ public class Particula {
             velocity[i] = 0;
         }
     }
+    public void UpdatePersonalAndGlobal() {
+        if (funcaoObjetivo.avaliar(position) < funcaoObjetivo.avaliar(pBestposition)) {
+            pBestposition = position.clone();
+        }
+        if (funcaoObjetivo.avaliar(position) < funcaoObjetivo.avaliar(config.getGlobalBestPOS())) {
+            config.setGlobalBestPOS(position.clone());
+        }
+    }
     
     public void aplicarVelocity() {
         for (int i = 0; i < config.getN(); i++) {
             position[i] = position[i] + velocity[i];
             
-            // Garante que a partícula não fuja do escopo mínimo e máximo
+            
+            
             if(position[i] < config.getEscopoDeBusca()[i][0]){ 
                 position[i] = config.getEscopoDeBusca()[i][0];
             }
@@ -119,7 +129,7 @@ public class Particula {
         }
     }
 
-    // --- Getters e Setters Mantidos ---
+    
     public double[] getposition() { return position; }
     public double getpositionI(int i) { return position[i]; }
     public void setposition(double[] position) { this.position = position; }

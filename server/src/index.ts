@@ -34,7 +34,9 @@ app.post("/api/pso/iteracao", async (request, reply) => {
 app.get("/api/pso/iteracao", async(request, reply) => {
     return ultimaIteracao
 })
-
+app.get("/api/pso/status", async (request, reply) => {
+    return { comando: simulacaoConfig.comando };
+});
 app.get("/api/pso/dados-recebidos", async (request, reply) => {
     if(!ultimaIteracao){
         return reply.status(404).send({erro: "Nenhuma iteracao rodando ou recebida."})
@@ -44,16 +46,14 @@ app.get("/api/pso/dados-recebidos", async (request, reply) => {
 });
 
 app.post("/api/pso/config", async (request, reply) => {
-    const body = request.body as Partial<typeof simulacaoConfig>
-
-    simulacaoConfig = {...simulacaoConfig,  ...body}
-    console.log(simulacaoConfig)
-    console.log("🔄 Configuração atualizada no Fastify:", simulacaoConfig);
-    return {status: "sucesso", dados: simulacaoConfig}
-
-
-})
-
+    const body = request.body as Partial<typeof simulacaoConfig>;
+    
+    // Se o Java enviar STOP, garanta que o simulacaoConfig.comando vire STOP
+    simulacaoConfig = {...simulacaoConfig, ...body};
+    
+    console.log("🔄 Configuração atualizada:", simulacaoConfig);
+    return { status: "sucesso" };
+});
 app.get("/api/pso/config", async () => {
     return simulacaoConfig
 })
